@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울특별시 양천구 음식점 현황 - React</title>
+    
+    <!-- React & ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #ccc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-clear:hover {
+            background: #999;
+            transform: translateY(-2px);
+        }
+
+        .search-info {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .no-results {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: #666;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-more {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            margin: 30px auto;
+            display: block;
+        }
+
+        .btn-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-more:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .restaurant-card h3 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .restaurant-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 80px;
+        }
+
+        .info-value {
+            color: #555;
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: #666;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .more-button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 1200px) {
+            .restaurant-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .restaurant-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-input,
+            .btn-search,
+            .btn-clear {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const API_KEY = 'b28f9f6867517ed96b3549e556ae9a7060aacc609af5fde6548359f1644753f5';
+        const API_URL = 'https://api.odcloud.kr/api/15035771/v1/uddi:e64ef09f-5a5a-484a-ac24-83b7443e4e44';
+        const INITIAL_DISPLAY_COUNT = 12;
+        const LOAD_MORE_COUNT = 12;
+
+        // 필드명 매핑
+        const fieldMapping = {
+            name: ['상호명', '업소명', '사업자명', '가게명', '업체명', '식당명', '사업장명', '사업장명(한글)', '업소명(한글)'],
+            address: ['소재지', '소재지전체주소', '소재지도로명주소', '소재지지번주소', '주소', '도로명주소', '지번주소', '위치', '소재지전체', '소재지주소'],
+            type: ['업종', '업종명', '업태', '업태구분명', '업태명', '종류', '음식점종류', '업종구분명'],
+            phone: ['전화번호', '전화번호1', '연락처', '전화', 'TEL', '전화번호2', '연락처번호'],
+            status: ['영업상태', '영업상태명', '영업상태구분명', '상태', '영업여부', '영업상태구분'],
+            license: ['인허가번호', '허가번호', '사업자등록번호', '인허가일자', '인허가일']
+        };
+
+        function getFieldValue(restaurant, fieldKeys) {
+            for (const key of fieldKeys) {
+                if (restaurant[key] !== undefined && restaurant[key] !== null && restaurant[key] !== '' && String(restaurant[key]).trim() !== '') {
+                    return restaurant[key];
+                }
+            }
+            return null;
+        }
+
+        // RestaurantCard 컴포넌트
+        function RestaurantCard({ restaurant, index }) {
+            const name = getFieldValue(restaurant, fieldMapping.name) || '이름 없음';
+            const address = getFieldValue(restaurant, fieldMapping.address);
+            const type = getFieldValue(restaurant, fieldMapping.type);
+            const phone = getFieldValue(restaurant, fieldMapping.phone);
+            const status = getFieldValue(restaurant, fieldMapping.status);
+            const license = getFieldValue(restaurant, fieldMapping.license);
+
+            // 사용된 필드명 수집
+            const usedFieldNames = new Set();
+            if (address) fieldMapping.address.forEach(f => usedFieldNames.add(f));
+            if (type) fieldMapping.type.forEach(f => usedFieldNames.add(f));
+            if (phone) fieldMapping.phone.forEach(f => usedFieldNames.add(f));
+            if (status) fieldMapping.status.forEach(f => usedFieldNames.add(f));
+            if (license) fieldMapping.license.forEach(f => usedFieldNames.add(f));
+            fieldMapping.name.forEach(f => usedFieldNames.add(f));
+
+            // 모든 필드 가져오기
+            const allFields = Object.keys(restaurant);
+            const otherFields = allFields
+                .filter(field => !usedFieldNames.has(field))
+                .map(field => ({
+                    key: field,
+                    value: restaurant[field]
+                }))
+                .filter(field => field.value !== null && field.value !== undefined && field.value !== '' && String(field.value).trim() !== '');
+
+            return (
+                <div className="restaurant-card" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <h3>{name}</h3>
+                    <div className="restaurant-info">
+                        {address && (
+                            <div className="info-item">
+                                <span className="info-label">📍 주소:</span>
+                                <span className="info-value">{address}</span>
+                            </div>
+                        )}
+                        {type && (
+                            <div className="info-item">
+                                <span className="info-label">🍴 업종:</span>
+                                <span className="info-value">{type}</span>
+                            </div>
+                        )}
+                        {phone && (
+                            <div className="info-item">
+                                <span className="info-label">📞 전화:</span>
+                                <span className="info-value">{phone}</span>
+                            </div>
+                        )}
+                        {status && (
+                            <div className="info-item">
+                                <span className="info-label">✅ 상태:</span>
+                                <span className="info-value">{status}</span>
+                            </div>
+                        )}
+                        {license && (
+                            <div className="info-item">
+                                <span className="info-label">📋 인허가번호:</span>
+                                <span className="info-value">{license}</span>
+                            </div>
+                        )}
+                        {otherFields.map((field, idx) => {
+                            let label = field.key;
+                            if (field.key.includes('주소') || field.key.includes('소재지')) {
+                                label = '📍 ' + field.key;
+                            } else if (field.key.includes('전화') || field.key.includes('연락')) {
+                                label = '📞 ' + field.key;
+                            } else if (field.key.includes('업종') || field.key.includes('업태')) {
+                                label = '🍴 ' + field.key;
+                            } else if (field.key.includes('상태')) {
+                                label = '✅ ' + field.key;
+                            }
+                            return (
+                                <div key={idx} className="info-item">
+                                    <span className="info-label">{label}:</span>
+                                    <span className="info-value">{field.value}</span>
+                                </div>
+                            );
+                        })}
+                        {!address && !type && !phone && !status && !license && otherFields.length === 0 && (
+                            <p>추가 정보가 없습니다.</p>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // 검색 함수
+        function searchRestaurants(restaurants, searchTerm) {
+            if (!searchTerm || searchTerm.trim() === '') {
+                return restaurants;
+            }
+
+            const term = searchTerm.toLowerCase().trim();
+            
+            return restaurants.filter(restaurant => {
+                // 이름 검색
+                const name = getFieldValue(restaurant, fieldMapping.name) || '';
+                const nameMatch = name.toLowerCase().includes(term);
+                
+                // 주소 검색
+                const address = getFieldValue(restaurant, fieldMapping.address) || '';
+                const addressMatch = address.toLowerCase().includes(term);
+                
+                return nameMatch || addressMatch;
+            });
+        }
+
+        // 메인 App 컴포넌트
+        function App() {
+            const [allRestaurants, setAllRestaurants] = useState([]); // 전체 데이터
+            const [searchTerm, setSearchTerm] = useState(''); // 검색어
+            const [isSearching, setIsSearching] = useState(false); // 검색 모드 여부
+            const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            // 모든 데이터 로드
+            const loadAllRestaurants = async () => {
+                setLoading(true);
+                setError(null);
+
+                try {
+                    let allData = [];
+                    let page = 1;
+                    let hasMore = true;
+
+                    // 모든 페이지를 순회하며 데이터 로드
+                    while (hasMore) {
+                        const url = `${API_URL}?serviceKey=${encodeURIComponent(API_KEY)}&page=${page}&perPage=100&returnType=JSON`;
+                        
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+
+                        if (data.code && data.code !== 'INFO-000') {
+                            throw new Error(data.message || 'API 호출에 실패했습니다.');
+                        }
+
+                        if (data.data && data.data.length > 0) {
+                            allData = [...allData, ...data.data];
+                            
+                            // 다음 페이지가 있는지 확인
+                            const totalCount = data.totalCount || 0;
+                            if (allData.length >= totalCount || data.data.length < 100) {
+                                hasMore = false;
+                            } else {
+                                page++;
+                            }
+                        } else {
+                            hasMore = false;
+                        }
+                    }
+
+                    console.log(`총 ${allData.length}개의 음식점 데이터를 로드했습니다.`);
+                    setAllRestaurants(allData);
+                    setDisplayCount(INITIAL_DISPLAY_COUNT); // 데이터 로드 시 초기화
+                    setIsSearching(false); // 검색 모드 해제
+                    setSearchTerm(''); // 검색어 초기화
+
+                } catch (err) {
+                    console.error('Error:', err);
+                    let errorMessage = err.message;
+                    
+                    if (err.message.includes('Failed to fetch') || err.message.includes('CORS')) {
+                        errorMessage = 'CORS 오류가 발생했습니다. 브라우저에서 직접 API를 호출할 수 없습니다. 로컬 서버를 통해 실행하거나, CORS 프록시를 사용해야 합니다.';
+                    }
+                    
+                    setError(errorMessage);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // 검색 실행
+            const handleSearch = () => {
+                if (searchTerm.trim() === '') {
+                    setIsSearching(false);
+                    setDisplayCount(INITIAL_DISPLAY_COUNT);
+                } else {
+                    setIsSearching(true);
+                    setDisplayCount(INITIAL_DISPLAY_COUNT);
+                }
+            };
+
+            // 검색어 초기화
+            const handleClearSearch = () => {
+                setSearchTerm('');
+                setIsSearching(false);
+                setDisplayCount(INITIAL_DISPLAY_COUNT);
+            };
+
+            // Enter 키로 검색
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    handleSearch();
+                }
+            };
+
+            // 더 보기 버튼 클릭
+            const handleLoadMore = () => {
+                setDisplayCount(prev => prev + LOAD_MORE_COUNT);
+            };
+
+            // 현재 표시할 음식점 목록 계산
+            const currentRestaurants = isSearching 
+                ? searchRestaurants(allRestaurants, searchTerm)
+                : allRestaurants;
+            
+            const displayedRestaurants = currentRestaurants.slice(0, displayCount);
+            const hasMore = displayCount < currentRestaurants.length;
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🍽️ 서울특별시 양천구 음식점 현황</h1>
+                        <p>공공데이터포털에서 제공하는 음식점 정보를 확인하세요</p>
+                        {allRestaurants.length > 0 && (
+                            <p style={{ marginTop: '10px', fontSize: '0.9rem', color: '#888' }}>
+                                {isSearching ? (
+                                    <>검색 결과: {currentRestaurants.length}개 발견 (현재 {displayedRestaurants.length}개 표시)</>
+                                ) : (
+                                    <>총 {allRestaurants.length}개의 음식점이 로드되었습니다. (현재 {displayedRestaurants.length}개 표시)</>
+                                )}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="controls">
+                        <button 
+                            className="btn" 
+                            onClick={loadAllRestaurants}
+                            disabled={loading}
+                        >
+                            {loading ? '로딩 중...' : '데이터 불러오기'}
+                        </button>
+                    </div>
+
+                    {allRestaurants.length > 0 && (
+                        <div className="search-container">
+                            <div className="search-box">
+                                <input
+                                    type="text"
+                                    className="search-input"
+                                    placeholder="식당 이름 또는 주소를 입력하세요"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                />
+                                <button 
+                                    className="btn-search" 
+                                    onClick={handleSearch}
+                                >
+                                    검색하기
+                                </button>
+                                {isSearching && (
+                                    <button 
+                                        className="btn-clear" 
+                                        onClick={handleClearSearch}
+                                    >
+                                        전체보기
+                                    </button>
+                                )}
+                            </div>
+                            {isSearching && (
+                                <div className="search-info">
+                                    검색어: "<strong>{searchTerm}</strong>" - {currentRestaurants.length}개의 결과를 찾았습니다.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {loading && (
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <p>데이터를 불러오는 중...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="error">
+                            <strong>오류가 발생했습니다:</strong><br />
+                            {error}<br /><br />
+                            <small>팁: CORS 오류인 경우, 로컬 서버를 실행하거나 브라우저 확장 프로그램을 사용해보세요.</small>
+                        </div>
+                    )}
+
+                    {allRestaurants.length > 0 && (
+                        <>
+                            {isSearching && currentRestaurants.length === 0 ? (
+                                <div className="no-results">
+                                    <h3>검색 결과가 없습니다</h3>
+                                    <p>다른 검색어를 입력해보세요.</p>
+                                    <button 
+                                        className="btn" 
+                                        onClick={handleClearSearch}
+                                        style={{ marginTop: '20px' }}
+                                    >
+                                        전체보기
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="restaurant-grid">
+                                        {displayedRestaurants.map((restaurant, index) => (
+                                            <RestaurantCard 
+                                                key={index} 
+                                                restaurant={restaurant} 
+                                                index={index}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {hasMore && (
+                                        <div className="more-button-container">
+                                            <button className="btn-more" onClick={handleLoadMore}>
+                                                더 보기 ({currentRestaurants.length - displayCount}개 남음)
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    <div className="footer">
+                        <p>데이터 제공: <a href="https://www.data.go.kr" target="_blank" rel="noopener noreferrer">공공데이터포털</a></p>
+                        <p>서울특별시 양천구 음식점 현황 데이터</p>
+                    </div>
+                </div>
+            );
+        }
+
+        // React 앱 렌더링
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
